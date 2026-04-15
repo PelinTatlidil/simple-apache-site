@@ -1,0 +1,45 @@
+name: Validate Apache Site Content
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate repository structure
+        run: |
+          echo "Checking for expected site files..."
+          if [ -f "index.html" ]; then
+            echo "Found index.html in repository root."
+          elif [ -f "public/index.html" ]; then
+            echo "Found public/index.html."
+          else
+            echo "ERROR: No index.html found in repository root or public/."
+            exit 1
+          fi
+
+      - name: Check for accidental deployment files
+        run: |
+          if [ -d ".github" ]; then
+            echo ".github directory is present in source tree, but it should not be deployed to a web root."
+          fi
+          if [ -d ".git" ]; then
+            echo "WARNING: .git directory is present in repository checkout. Ensure deploy steps exclude git metadata."
+          fi
+
+      - name: Validate HTML files exist
+        run: |
+          html_count=$(find . -maxdepth 2 -type f \( -iname '*.html' -o -iname '*.htm' \) | wc -l)
+          echo "Found $html_count HTML file(s)."
+          if [ "$html_count" -eq 0 ]; then
+            echo "ERROR: No HTML files found in the repository."
+            exit 1
+          fi
+          
