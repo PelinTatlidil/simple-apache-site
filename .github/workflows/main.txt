@@ -1,0 +1,5 @@
+# Create a VM
+# Install Ubuntu
+# Open firewall for ports 80/443
+
+
